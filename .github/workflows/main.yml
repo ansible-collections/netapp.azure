@@ -35,10 +35,13 @@ jobs:
         run: rm -f /tmp/netapp-azure*
 
       - name: Check collection path (azure)
-        run: ls
+        run: |
+          pwd
+          ls
 
       - name: Build collection (azure)
         run: ansible-galaxy collection build --output-path /tmp ./ansible_collections/netapp/azure
+        working-directory: ansible_collections/netapp/azure/../..
 
       - name: Install collection (azure)
         run: ansible-galaxy collection install /tmp/netapp-azure*
@@ -48,7 +51,7 @@ jobs:
 
       - name: Run sanity tests (azure)
         run: ansible-test sanity --docker -v --color
-        working-directory: ansible_collections/netapp/azure
+        working-directory: /home/runner/.ansible/collections/ansible_collections/netapp/azure
 
       - name: Run Unit Tests
         run: ansible-test units --docker -v --color
