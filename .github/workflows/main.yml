@@ -40,8 +40,7 @@ jobs:
           ls
 
       - name: Build collection (azure)
-        run: ansible-galaxy collection build --output-path /tmp ./ansible_collections/netapp/azure
-        working-directory: ansible_collections/netapp/azure/../..
+        run: ansible-galaxy collection build --output-path /tmp .
 
       - name: Install collection (azure)
         run: ansible-galaxy collection install /tmp/netapp-azure*
