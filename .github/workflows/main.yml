@@ -34,6 +34,9 @@ jobs:
       - name: Delete collection tar file (azure)
         run: rm -f /tmp/netapp-azure*
 
+      - name: Check collection path (azure)
+        run: ls
+
       - name: Build collection (azure)
         run: ansible-galaxy collection build --output-path /tmp ./ansible_collections/netapp/azure
 
