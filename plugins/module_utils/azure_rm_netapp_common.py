@@ -10,17 +10,21 @@ Wrapper around AzureRMModuleBase base class
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import sys
+
 HAS_AZURE_COLLECTION = True
 NEW_STYLE = None
-COLLECTION_VERSION = "21.6.0"
+COLLECTION_VERSION = "21.7.0"
 IMPORT_ERRORS = list()
 
-try:
-    from ansible_collections.azure.azcollection.plugins.module_utils.azure_rm_common import AzureRMModuleBase
-except ImportError as exc:
-    IMPORT_ERRORS.append(str(exc))
+if 'pytest' in sys.modules:
     from ansible_collections.netapp.azure.plugins.module_utils.netapp_module import AzureRMModuleBaseMock as AzureRMModuleBase
-    HAS_AZURE_COLLECTION = False
+else:
+    try:
+        from ansible_collections.azure.azcollection.plugins.module_utils.azure_rm_common import AzureRMModuleBase
+    except ImportError as exc:
+        IMPORT_ERRORS.append(str(exc))
+        HAS_AZURE_COLLECTION = False
 
 try:
     from azure.mgmt.netapp import NetAppManagementClient                    # 1.0.0 or newer

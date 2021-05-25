@@ -16,28 +16,6 @@ from ansible.module_utils._text import to_bytes
 from ansible_collections.netapp.azure.tests.unit.compat import unittest
 from ansible_collections.netapp.azure.tests.unit.compat.mock import patch, Mock
 
-
-# We can't import ansible_collections.azure.azcollection.plugins.module_utils.azure_rm_common in the UT environment
-# and anyway, it's better to remove any external dependency in UTs.
-class MockAzureRMModuleBase:
-    ''' dummy base class for AzureRMNetAppModuleBase '''
-    def __init__(self, derived_arg_spec, required_if=None, supports_check_mode=False, **kwargs):
-        derived_arg_spec.update(dict(tags=dict()))
-        self.module = basic.AnsibleModule(
-            argument_spec=derived_arg_spec,
-            required_if=required_if,
-            supports_check_mode=supports_check_mode
-        )
-        # the following is done in exec_module()
-        self.parameters = dict([item for item in self.module.params.items() if item[1] is not None])
-        # remove values with a default of None (not required)
-        self.module_arg_spec = dict([item for item in self.module_arg_spec.items() if item[0] in self.parameters])
-
-
-mocked_module = type(sys)('mock_azure_import')
-mocked_module.AzureRMModuleBase = MockAzureRMModuleBase
-sys.modules['ansible_collections.azure.azcollection.plugins.module_utils.azure_rm_common'] = mocked_module
-
 HAS_AZURE_RMNETAPP_IMPORT = True
 try:
     # At this point, python believes the module is already loaded, so the import inside azure_rm_netapp_volume will be skipped.
@@ -45,9 +23,6 @@ try:
         import AzureRMNetAppCapacityPool as capacity_pool_module
 except ImportError:
     HAS_AZURE_RMNETAPP_IMPORT = False
-
-# clean up to avoid side effects
-del sys.modules['ansible_collections.azure.azcollection.plugins.module_utils.azure_rm_common']
 
 HAS_AZURE_CLOUD_ERROR_IMPORT = True
 try:
