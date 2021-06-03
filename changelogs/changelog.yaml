@@ -126,3 +126,10 @@ releases:
     - DEVOPS-3935.yaml
     - DEVOPS-3949.yaml
     release_date: '2021-05-06'
+  21.7.0:
+    changes:
+      bugfixes:
+      - fix CI pipeline to work with azcollection, and isolate UTs from azcollection.
+    fragments:
+    - DEVOPS-4001.yaml
+    release_date: '2021-06-03'

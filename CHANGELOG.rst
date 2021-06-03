@@ -5,6 +5,14 @@ Azure NetApp Files (ANF) Collection Release Notes
 .. contents:: Topics
 
 
+v21.7.0
+=======
+
+Bugfixes
+--------
+
+- fix CI pipeline to work with azcollection, and isolate UTs from azcollection.
+
 v21.6.0
 =======
 
