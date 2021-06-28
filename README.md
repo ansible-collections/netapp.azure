@@ -32,6 +32,13 @@ Join our Slack Channel at [Netapp.io](http://netapp.io/slack)
 This collection follows the [Ansible project's Code of Conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html).
 
 # Release Notes
+## 21.8.0
+
+### Bug Fixes
+
+- fix CI pipeline as azcollection does not support python 2.6.
+- fix CI pipeline as ignores are not required with latest azcollection.
+
 ## 21.7.0
 
 ### Bug Fixes
