@@ -133,3 +133,11 @@ releases:
     fragments:
     - DEVOPS-4001.yaml
     release_date: '2021-06-03'
+  21.8.0:
+    changes:
+      bugfixes:
+      - fix CI pipeline as azcollection does not support python 2.6.
+      - fix CI pipeline as ignores are not required with latest azcollection.
+    fragments:
+    - DEVOPS-4070.yaml
+    release_date: '2021-07-14'

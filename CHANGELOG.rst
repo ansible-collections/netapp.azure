@@ -5,6 +5,15 @@ Azure NetApp Files (ANF) Collection Release Notes
 .. contents:: Topics
 
 
+v21.8.0
+=======
+
+Bugfixes
+--------
+
+- fix CI pipeline as azcollection does not support python 2.6.
+- fix CI pipeline as ignores are not required with latest azcollection.
+
 v21.7.0
 =======
 
