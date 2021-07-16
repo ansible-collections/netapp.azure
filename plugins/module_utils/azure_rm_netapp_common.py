@@ -14,7 +14,7 @@ import sys
 
 HAS_AZURE_COLLECTION = True
 NEW_STYLE = None
-COLLECTION_VERSION = "21.8.0"
+COLLECTION_VERSION = "21.8.1"
 IMPORT_ERRORS = list()
 
 if 'pytest' in sys.modules:

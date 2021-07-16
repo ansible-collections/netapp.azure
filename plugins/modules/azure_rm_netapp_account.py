@@ -23,8 +23,8 @@ description:
     - Create and delete NetApp Azure account.
       Provide the Resource group name for the NetApp account to be created.
 extends_documentation_fragment:
-    - azure.azcollection.azure
-    - azure.azcollection.azure_tags
+    - netapp.azure.azure
+    - netapp.azure.azure_tags
     - netapp.azure.netapp.azure_rm_netapp
 
 options:

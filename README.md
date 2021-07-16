@@ -32,6 +32,13 @@ Join our Slack Channel at [Netapp.io](http://netapp.io/slack)
 This collection follows the [Ansible project's Code of Conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html).
 
 # Release Notes
+
+
+## 21.8.1
+
+### Bug Fixes
+  - Hub Automation cannot generate documentation (cannot use doc fragments from another collection).
+
 ## 21.8.0
 
 ### Bug Fixes

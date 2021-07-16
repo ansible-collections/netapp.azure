@@ -24,8 +24,8 @@ description:
       Provide the Resource group name for the capacity pool to be created.
     - Resize NetApp Azure capacity pool
 extends_documentation_fragment:
-    - azure.azcollection.azure
-    - azure.azcollection.azure_tags
+    - netapp.azure.azure
+    - netapp.azure.azure_tags
     - netapp.azure.netapp.azure_rm_netapp
 
 options:
@@ -116,7 +116,7 @@ try:
     from azure.mgmt.netapp.models import CapacityPool
     HAS_AZURE_MGMT_NETAPP = True
 except ImportError as exc:
-    HAS_AZURE_MGMT_NETAPP = False
+    IMPORT_ERRORS.append(str(exc))
 
 from ansible.module_utils.basic import to_native
 from ansible_collections.netapp.azure.plugins.module_utils.azure_rm_netapp_common import AzureRMNetAppModuleBase

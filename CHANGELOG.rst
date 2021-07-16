@@ -5,6 +5,14 @@ Azure NetApp Files (ANF) Collection Release Notes
 .. contents:: Topics
 
 
+v21.8.1
+=======
+
+Bugfixes
+--------
+
+- Hub Automation cannot generate documentation (cannot use doc fragments from another collection).
+
 v21.8.0
 =======
 

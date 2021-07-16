@@ -22,8 +22,8 @@ author: NetApp Ansible Team (@carchi8py) <ng-ansibleteam@netapp.com>
 description:
     - Create and delete NetApp Azure volume.
 extends_documentation_fragment:
-    - azure.azcollection.azure
-    - azure.azcollection.azure_tags
+    - netapp.azure.azure
+    - netapp.azure.azure_tags
     - netapp.azure.netapp.azure_rm_netapp
 
 options:

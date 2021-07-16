@@ -22,7 +22,7 @@ author: NetApp Ansible Team (@carchi8py) <ng-ansibleteam@netapp.com>
 description:
     - Create and delete NetApp Azure Snapshot.
 extends_documentation_fragment:
-    - azure.azcollection.azure
+    - netapp.azure.azure
     - netapp.azure.netapp.azure_rm_netapp
 
 options:
@@ -103,7 +103,6 @@ try:
     from azure.mgmt.netapp.models import Snapshot
     HAS_AZURE_MGMT_NETAPP = True
 except ImportError as exc:
-    HAS_AZURE_MGMT_NETAPP = False
     IMPORT_ERRORS.append(str(exc))
 
 from ansible.module_utils.basic import to_native
