@@ -14,8 +14,9 @@ import sys
 
 HAS_AZURE_COLLECTION = True
 NEW_STYLE = None
-COLLECTION_VERSION = "21.8.1"
-IMPORT_ERRORS = list()
+COLLECTION_VERSION = "21.9.0"
+IMPORT_ERRORS = []
+SDK_VERSION = "0.0.0"
 
 if 'pytest' in sys.modules:
     from ansible_collections.netapp.azure.plugins.module_utils.netapp_module import AzureRMModuleBaseMock as AzureRMModuleBase
@@ -45,12 +46,18 @@ except ImportError as exc:
     except ImportError as exc:
         IMPORT_ERRORS.append(str(exc))
 
+try:
+    from azure.mgmt.netapp import VERSION as SDK_VERSION
+except ImportError as exc:
+    IMPORT_ERRORS.append(str(exc))
+
 
 class AzureRMNetAppModuleBase(AzureRMModuleBase):
     ''' Wrapper around AzureRMModuleBase base class '''
     def __init__(self, derived_arg_spec, required_if=None, supports_check_mode=False, supports_tags=True):
         self._netapp_client = None
         self._new_style = NEW_STYLE
+        self._sdk_version = SDK_VERSION
         super(AzureRMNetAppModuleBase, self).__init__(derived_arg_spec=derived_arg_spec,
                                                       required_if=required_if,
                                                       supports_check_mode=supports_check_mode,
@@ -91,6 +98,10 @@ class AzureRMNetAppModuleBase(AzureRMModuleBase):
     def new_style(self):
         return self._new_style
 
+    @property
+    def sdk_version(self):
+        return self._sdk_version
+
     def get_method(self, category, name):
         try:
             methods = getattr(self.netapp_client, category)
@@ -116,3 +127,30 @@ class AzureRMNetAppModuleBase(AzureRMModuleBase):
             self.module.fail_json(msg=msg)
         msg += str(import_errors)
         raise ImportError(msg)
+
+    def has_feature(self, feature_name):
+        feature = self.get_feature(feature_name)
+        if isinstance(feature, bool):
+            return feature
+        self.module.fail_json(msg="Error: expected bool type for feature flag: %s" % feature_name)
+
+    def get_feature(self, feature_name):
+        ''' if the user has configured the feature, use it
+            otherwise, use our default
+        '''
+        default_flags = dict(
+            # TODO: review need for these
+            # trace_apis=False,                       # if true, append REST requests/responses to /tmp/azure_apis.log
+            # check_required_params_for_none=True,
+            # deprecation_warning=True,
+            # show_modified=True,
+            #
+            # preview features in ANF
+            ignore_change_ownership_mode=True
+        )
+
+        if self.parameters.get('feature_flags') is not None and feature_name in self.parameters['feature_flags']:
+            return self.parameters['feature_flags'][feature_name]
+        if feature_name in default_flags:
+            return default_flags[feature_name]
+        self.module.fail_json(msg="Internal error: unexpected feature flag: %s" % feature_name)

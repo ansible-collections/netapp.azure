@@ -67,15 +67,15 @@ class MockAzureClient(object):
         self.valid_volumes = ['test1', 'test2']
 
     def get(self, resource_group, account_name, pool_name, volume_name):  # pylint: disable=unused-argument
-        if volume_name not in self.valid_volumes:
-            invalid = Response()
-            invalid.status_code = 404
-            raise CloudError(response=invalid)
-        else:
+        if volume_name in self.valid_volumes:
             return Mock(name=volume_name,
                         subnet_id='/resid/whatever/subnet_name',
                         mount_targets=[Mock(ip_address='1.2.3.4')]
                         )
+
+        invalid = Response()
+        invalid.status_code = 404
+        raise CloudError(response=invalid)
 
     def create_or_update(self, body, resource_group, account_name, pool_name, volume_name):             # pylint: disable=unused-argument
         return None
@@ -133,7 +133,8 @@ def set_default_args():
         'subnet_name': subnet_id,
         'virtual_network': virtual_network,
         'size': size,
-        'protocol_types': 'nfs'
+        'protocol_types': 'nfs',
+        'tags': {'owner': 'laurentn'}
     })
 
 
@@ -196,7 +197,7 @@ def test_ensure_create_called(mock_create, mock_get, client_f, patch_ansible):  
 def test_create(mock_get, client_f, patch_ansible):  # pylint: disable=unused-argument
     data = dict(set_default_args())
     data['name'] = 'create'
-    data['protocol_types'] = 'nfsv4.1'
+    data['protocol_types'] = ['nfsv4.1']
     set_module_args(data)
     mock_get.side_effect = [
         None,                                                       # first get
@@ -364,10 +365,12 @@ def test_modify(mock_get, client_f, patch_ansible):  # pylint: disable=unused-ar
     data = dict(set_default_args())
     data['name'] = 'modify'
     data['size'] = 200
+    data['tags'] = {'added_tag': 'new_tag'}
     set_module_args(data)
     mock_get.side_effect = [
         dict(mount_targets=[dict(ip_address='11.22.33.44')],        # first get
              creation_token='abcd',
+             tags={},
              usage_threshold=0),
         dict(mount_targets=[dict(ip_address='11.22.33.44')],        # get after modify
              creation_token='abcd',
@@ -384,6 +387,7 @@ def test_modify(mock_get, client_f, patch_ansible):  # pylint: disable=unused-ar
         data['debug'] = False
         my_obj.exec_module(**data)
     assert exc.value.args[0]['changed']
+    print('modify', exc.value.args[0])
     expected_mount_path = '11.22.33.44:/abcd'
     assert exc.value.args[0]['mount_path'] == expected_mount_path
 
@@ -469,3 +473,25 @@ def test_get_export_policy_rules(client_f, patch_ansible):
     rule = vars(rules[0])
     assert rule['nfsv41']
     assert not rule['cifs']
+
+
+def test_dict_from_object():
+    set_module_args(set_default_args())
+    my_obj = volume_module()
+    # just for fun
+    module_dict = my_obj.dict_from_volume_object(my_obj)
+    print('Module dict', module_dict)
+
+    rule_object = Mock()
+    rule_object.ip_address = '10.10.10.10'
+    export_policy_object = Mock()
+    export_policy_object.rules = [rule_object]
+    volume_object = Mock()
+    volume_object.export_policy = export_policy_object
+    volume_dict = my_obj.dict_from_volume_object(volume_object)
+    print('Volume dict', volume_dict)
+    assert 'export_policy' in volume_dict
+    assert 'rules' in volume_dict['export_policy']
+    assert isinstance(volume_dict['export_policy']['rules'], list)
+    assert len(volume_dict['export_policy']['rules']) == 1
+    assert 'ip_address' in volume_dict['export_policy']['rules'][0]

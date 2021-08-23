@@ -50,6 +50,10 @@ class AzureRMModuleBaseMock():
         # remove values with a default of None (not required)
         self.module_arg_spec = dict([item for item in self.module_arg_spec.items() if item[0] in self.parameters])
 
+    def update_tags(self, tags):
+        self.module.log('update_tags called with:', tags)
+        return None, None
+
 
 def cmp(obj1, obj2):
     """
@@ -83,17 +87,17 @@ class NetAppModule():
     '''
 
     def __init__(self):
-        self.log = list()
+        self.log = []
         self.changed = False
         self.parameters = {'name': 'not intialized'}
         self.zapi_string_keys = dict()
         self.zapi_bool_keys = dict()
-        self.zapi_list_keys = dict()
-        self.zapi_int_keys = dict()
-        self.zapi_required = dict()
+        self.zapi_list_keys = {}
+        self.zapi_int_keys = {}
+        self.zapi_required = {}
 
     def set_parameters(self, ansible_params):
-        self.parameters = dict()
+        self.parameters = {}
         for param in ansible_params:
             if ansible_params[param] is not None:
                 self.parameters[param] = ansible_params[param]
@@ -109,11 +113,7 @@ class NetAppModule():
                 is_present = 'present'
             action = cd_action(current=is_present, desired = self.desired.state())
         '''
-        if 'state' in desired:
-            desired_state = desired['state']
-        else:
-            desired_state = 'present'
-
+        desired_state = desired['state'] if 'state' in desired else 'present'
         if current is None and desired_state == 'absent':
             return None
         if current is not None and desired_state == 'present':
@@ -125,7 +125,7 @@ class NetAppModule():
         return 'create'
 
     def compare_and_update_values(self, current, desired, keys_to_compare):
-        updated_values = dict()
+        updated_values = {}
         is_changed = False
         for key in keys_to_compare:
             if key in current:
@@ -185,7 +185,7 @@ class NetAppModule():
             aggregate name)
         '''
         # if the object does not exist,  we can't modify it
-        modified = dict()
+        modified = {}
         if current is None:
             return modified
 
@@ -224,7 +224,7 @@ class NetAppModule():
             # idempotency (or) new_name_is_already_in_use
             # alternatively we could delete B and rename A to B
             return False
-        if source is None and target is not None:
+        if source is None:
             # do nothing, maybe the rename was already done
             return False
         # source is not None and target is None:
@@ -238,7 +238,7 @@ class NetAppModule():
         """
 
         if isinstance(list_or_dict, dict):
-            result = dict()
+            result = {}
             for key, value in list_or_dict.items():
                 if isinstance(value, (list, dict)):
                     sub = self.filter_out_none_entries(value)
@@ -251,7 +251,7 @@ class NetAppModule():
             return result
 
         if isinstance(list_or_dict, list):
-            alist = list()
+            alist = []
             for item in list_or_dict:
                 if isinstance(item, (list, dict)):
                     sub = self.filter_out_none_entries(item)
@@ -267,4 +267,5 @@ class NetAppModule():
 
     @staticmethod
     def get_not_none_values_from_dict(parameters, keys):
+        # python 2.6 does not support dict comprehension using k: v
         return dict((key, value) for key, value in parameters.items() if key in keys and value is not None)

@@ -28,75 +28,83 @@ extends_documentation_fragment:
 
 options:
     name:
-        description:
-            - The name of the volume.
-        required: true
-        type: str
+      description:
+        - The name of the volume.
+      required: true
+      type: str
     file_path:
-        description:
-            - A unique file path for the volume. Used when creating mount targets.
-        type: str
+      description:
+        - A unique file path for the volume. Used when creating mount targets.
+      type: str
     pool_name:
-        description:
-            - The name of the capacity pool.
-        required: true
-        type: str
+      description:
+        - The name of the capacity pool.
+      required: true
+      type: str
     account_name:
-        description:
-            - The name of the NetApp account.
-        required: true
-        type: str
+      description:
+        - The name of the NetApp account.
+      required: true
+      type: str
     location:
-        description:
-            - Resource location.
-            - Required for create.
-        type: str
+      description:
+        - Resource location.
+        - Required for create.
+      type: str
     subnet_name:
-        description:
-            - Azure resource name for a delegated subnet. Must have the delegation Microsoft.NetApp/volumes.
-            - Provide name of the subnet ID.
-            - Required for create.
-        type: str
-        aliases: ['subnet_id']
-        version_added: 21.1.0
+      description:
+        - Azure resource name for a delegated subnet. Must have the delegation Microsoft.NetApp/volumes.
+        - Provide name of the subnet ID.
+        - Required for create.
+      type: str
+      aliases: ['subnet_id']
+      version_added: 21.1.0
     virtual_network:
-        description:
-            - The name of the virtual network required for the subnet to create a volume.
-            - Required for create.
-        type: str
+      description:
+        - The name of the virtual network required for the subnet to create a volume.
+        - Required for create.
+      type: str
     service_level:
-        description:
-            - The service level of the file system.
-            - default is Premium.
-        type: str
-        choices: ['Premium', 'Standard', 'Ultra']
+      description:
+        - The service level of the file system.
+        - default is Premium.
+      type: str
+      choices: ['Premium', 'Standard', 'Ultra']
     vnet_resource_group_for_subnet:
-        description:
-            - Only required if virtual_network to be used is of different resource_group.
-            - Name of the resource group for virtual_network and subnet_name to be used.
-        type: str
-        version_added: "20.5.0"
+      description:
+        - Only required if virtual_network to be used is of different resource_group.
+        - Name of the resource group for virtual_network and subnet_name to be used.
+      type: str
+      version_added: "20.5.0"
     size:
-        description:
-            - Provisioned size of the volume (in GiB).
-            - Minimum size is 100 GiB. Upper limit is 100TiB
-            - default is 100GiB.
-        version_added: "20.5.0"
-        type: int
+      description:
+        - Provisioned size of the volume (in GiB).
+        - Minimum size is 100 GiB. Upper limit is 100TiB
+        - default is 100GiB.
+      version_added: "20.5.0"
+      type: int
     protocol_types:
-        description:
-            - Protocol types - NFSv3, NFSv4.1, CIFS (for SMB).
-        type: list
-        elements: str
-        version_added: 21.2.0
+      description:
+        - Protocol types - NFSv3, NFSv4.1, CIFS (for SMB).
+      type: list
+      elements: str
+      version_added: 21.2.0
     state:
-        description:
-            - State C(present) will check that the volume exists with the requested configuration.
-            - State C(absent) will delete the volume.
-        default: present
-        choices: ['present', 'absent']
-        type: str
-
+      description:
+        - State C(present) will check that the volume exists with the requested configuration.
+        - State C(absent) will delete the volume.
+      default: present
+      choices: ['present', 'absent']
+      type: str
+    feature_flags:
+      description:
+        - Enable or disable a new feature.
+        - This can be used to enable an experimental feature or disable a new feature that breaks backward compatibility.
+        - Supported keys and values are subject to change without notice.  Unknown keys are ignored.
+      type: dict
+      version_added: 21.9.0
+notes:
+  - feature_flags is setting ignore_change_ownership_mode to true by default to bypass a 'change ownership mode' issue with azure-mgmt-netapp 4.0.0.
 '''
 EXAMPLES = '''
 
@@ -136,7 +144,7 @@ import traceback
 
 AZURE_OBJECT_CLASS = 'NetAppAccount'
 HAS_AZURE_MGMT_NETAPP = False
-IMPORT_ERRORS = list()
+IMPORT_ERRORS = []
 ONE_GIB = 1073741824
 
 try:
@@ -175,10 +183,11 @@ class AzureRMNetAppVolume(AzureRMNetAppModuleBase):
             size=dict(type='int', required=False),
             vnet_resource_group_for_subnet=dict(type='str', required=False),
             service_level=dict(type='str', required=False, choices=['Premium', 'Standard', 'Ultra']),
-            protocol_types=dict(type='list', elements='str')
+            protocol_types=dict(type='list', elements='str'),
+            feature_flags=dict(type='dict')
         )
         self.na_helper = NetAppModule()
-        self.parameters = dict()
+        self.parameters = {}
 
         # import errors are handled in AzureRMModuleBase
         super(AzureRMNetAppVolume, self).__init__(derived_arg_spec=self.module_arg_spec,
@@ -188,13 +197,22 @@ class AzureRMNetAppVolume(AzureRMNetAppModuleBase):
 
     @staticmethod
     def dict_from_volume_object(volume_object):
+
+        def replace_list_of_objects_with_list_of_dicts(adict, key):
+            if adict.get(key):
+                adict[key] = [vars(x) for x in adict[key]]
+
         current_dict = vars(volume_object)
         attr = 'subnet_id'
         if attr in current_dict:
             current_dict['subnet_name'] = current_dict.pop(attr).split('/')[-1]
         attr = 'mount_targets'
+        replace_list_of_objects_with_list_of_dicts(current_dict, attr)
+        attr = 'export_policy'
         if current_dict.get(attr):
-            current_dict[attr] = [vars(mount) for mount in current_dict[attr]]
+            attr_dict = vars(current_dict[attr])
+            replace_list_of_objects_with_list_of_dicts(attr_dict, 'rules')
+            current_dict[attr] = attr_dict
         return current_dict
 
     def get_azure_netapp_volume(self):
@@ -227,6 +245,9 @@ class AzureRMNetAppVolume(AzureRMNetAppModuleBase):
             rule_index=1,
             allowed_clients='0.0.0.0/0',
             unix_read_write=True)
+        if self.has_feature('ignore_change_ownership_mode') and self.sdk_version >= '4.0.0':
+            # https://github.com/Azure/azure-sdk-for-python/issues/20356
+            options['chown_mode'] = None
         for protocol in ('cifs', 'nfsv3', 'nfsv41'):
             options[protocol] = protocol in ptypes
         return VolumePropertiesExportPolicy(rules=[ExportPolicyRule(**options)])
@@ -239,6 +260,12 @@ class AzureRMNetAppVolume(AzureRMNetAppModuleBase):
         options = self.na_helper.get_not_none_values_from_dict(self.parameters, ['protocol_types', 'service_level', 'tags', 'usage_threshold'])
         rules = self.get_export_policy_rules()
         if rules is not None:
+            # TODO: other options to expose ?
+            # options['throughput_mibps'] = 1.6
+            # options['encryption_key_source'] = 'Microsoft.NetApp'
+            # options['security_style'] = 'Unix'
+            # options['unix_permissions'] = '0770'
+            # required for NFSv4
             options['export_policy'] = rules
         subnet_id = '/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s'\
                     % (self.azure_auth.subscription_id,

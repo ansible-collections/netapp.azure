@@ -34,6 +34,14 @@ This collection follows the [Ansible project's Code of Conduct](https://docs.ans
 # Release Notes
 
 
+## 21.9.0
+
+### New Options
+  - azure_rm_netapp_volume - `feature_flags` to selectively enable/disable a feature.
+
+### Bug Fixes
+  - azure_rm_netapp_volume - 'Change Ownership' is not permitted when creating NFSv4.1 volume with latest azure-mgmt-netapp package (4.0.0).
+
 ## 21.8.1
 
 ### Bug Fixes
