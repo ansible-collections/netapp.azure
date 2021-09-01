@@ -5,6 +5,19 @@ Azure NetApp Files (ANF) Collection Release Notes
 .. contents:: Topics
 
 
+v21.9.0
+=======
+
+Minor Changes
+-------------
+
+- azure_rm_netapp_volume - new option ``feature_flags`` to selectively enable/disable a feature.
+
+Bugfixes
+--------
+
+- azure_rm_netapp_volume - 'Change Ownership' is not permitted when creating NFSv4.1 volume with latest azure-mgmt-netapp package (4.0.0).
+
 v21.8.1
 =======
 
