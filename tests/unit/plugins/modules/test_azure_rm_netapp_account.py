@@ -9,7 +9,11 @@ import json
 import sys
 
 import pytest
-from requests import Response
+try:
+    from requests import Response
+except ImportError:
+    if sys.version_info < (2, 7):
+        pytestmark = pytest.mark.skip('Skipping Unit Tests on 2.6 as requests is not be available')
 
 from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
