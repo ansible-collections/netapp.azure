@@ -40,6 +40,10 @@ This collection follows the [Ansible project's Code of Conduct](https://docs.ans
 
 # Release Notes
 
+## 21.10.0
+
+### Minor changes
+  - all modules - allow usage of Ansible module group defaults - for Ansible 2.12+.
 
 ## 21.9.0
 
