@@ -5,6 +5,14 @@ Azure NetApp Files (ANF) Collection Release Notes
 .. contents:: Topics
 
 
+v21.10.0
+========
+
+Minor Changes
+-------------
+
+- PR1 - allow usage of Ansible module group defaults - for Ansible 2.12+.
+
 v21.9.0
 =======
 
