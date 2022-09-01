@@ -26,6 +26,11 @@ else:
     except ImportError as exc:
         IMPORT_ERRORS.append(str(exc))
         HAS_AZURE_COLLECTION = False
+
+        class AzureRMModuleBase:
+            def __init__(self, derived_arg_spec, required_if=None, supports_check_mode=False, supports_tags=True, **kwargs):
+                raise ImportError(IMPORT_ERRORS)
+
     except SyntaxError as exc:
         # importing Azure collection fails with python 2.6
         if sys.version_info < (2, 8):
@@ -40,6 +45,8 @@ try:
     NEW_STYLE = True
 except ImportError as exc:
     IMPORT_ERRORS.append(str(exc))
+
+if NEW_STYLE is None:
     try:
         from azure.mgmt.netapp import AzureNetAppFilesManagementClient      # 0.10.0 or older
         NEW_STYLE = False
